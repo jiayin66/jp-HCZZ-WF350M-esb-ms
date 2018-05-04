@@ -1,0 +1,56 @@
+server:
+  port: 8090
+spring:
+  application:
+    name: jp-HCZZ-350M-esb-ms
+  cloud:
+    inetutils: 
+      ignoredInterfaces: 
+        - tunl0
+        - docker0
+    consul:
+      host: ${dev.consul1}
+      port: ${test.consul.port}
+      discovery:
+        preferIpAddress: true
+        port: 8090
+        healthCheckPath: /health
+        healthCheckInterval: 15s
+        instanceId: ${dev.instanceId}
+        query-passing: true
+#如果微服务没有数据库配置，则该处等号线号线括起来的部分可以删除
+  datasource:
+    driver-class-name: oracle.jdbc.driver.OracleDriver
+    url: ${oracle.url}
+    username: JPPRODUCER #数据库用户名密码信息请开发人员认真检查一下
+    password: admin123
+  jpa:
+    properties:
+      hibernate.hbm2ddl.auto: update
+      javax.persistence.validation.mode: none
+    show-sql: true
+#========================================================
+  rabbitmq:
+    addresses: ${dev.rabbitmq}
+    username: all_hczz
+    password: all_hczz
+    virtual-host: all_hczz
+  sleuth:
+    sampler:
+      percentage: 1.0
+  output:
+    ansi:
+      enabled: detect
+  jackson:
+    mapper:
+      accept-case-insensitive-properties: true
+jp:
+  swagger:
+    base-package: com.jp.hczz.350m.controller
+    api-info:
+      title: 金鹏微服务
+      description: 金鹏微服务，基于spring boot
+      contact: 杨佳维
+      version: 0.0.1-SNAPSHOT
+      url: www.example.com
+      email: jinpeng@gzjp.cn
