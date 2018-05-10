@@ -1,19 +1,22 @@
 package com.jp.hczz.dsj350m.netty.client;
 
-import com.jp.hczz.dsj350m.io.Dsj350MPositionOutput;
+import com.jp.hczz.dsj350m.event.MessageSendService;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.integration.support.MessageBuilder;
-import org.springframework.messaging.Message;
+import org.springframework.stereotype.Component;
 
 import java.io.UnsupportedEncodingException;
 
+@Component
 class ClientHandler extends ChannelHandlerAdapter {
 
+    private Logger log = Logger.getLogger(ClientHandler.class);
+
     @Autowired
-    private Dsj350MPositionOutput dsj350MPositionOutput;
+    private MessageSendService messageSendService;
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
@@ -22,9 +25,17 @@ class ClientHandler extends ChannelHandlerAdapter {
         in.readBytes(req);
         try {
             String body = new String(req, "UTF-8");
-            System.out.println("Client said:" + body);
-            Message<String> message = MessageBuilder.withPayload(body).build();
-            dsj350MPositionOutput.getDsj350MInfoChannel().send(message);
+            String[] msgs = body.split("@");
+            if (msgs.length < 7) {
+                log.warn("收到消息不符合协议格式忽略本条消息！！" + body);
+                return;
+            }
+            if (!msgs[0].equals("1")) {
+                log.warn("收到消息不是GPS报文消息，忽略本条消息！！" + body);
+                return;
+            }
+            log.info("收到消息：" + body);
+            messageSendService.sendMessage(body);
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }

@@ -1,5 +1,6 @@
 package com.jp.hczz.dsj350m.netty.client;
 
+import com.jp.hczz.dsj350m.event.MessageSendService;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -11,13 +12,18 @@ import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.net.InetSocketAddress;
+import java.nio.ByteOrder;
 import java.util.concurrent.TimeUnit;
 
 @Component
 public class NettyClient {
+
+    @Autowired
+    private ClientHandler clientHandler;
 
     private final static Logger logger = LoggerFactory.getLogger(NettyClient.class);
 
@@ -71,10 +77,10 @@ public class NettyClient {
 //                        pipeline.addLast(new StringEncoder());
                         //处理类
 //                        pipeline.addLast("frameDecoder", new ByteDecoder());
-                        pipeline.addLast("frameDecoder", new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 4, 0, 4));
+                        pipeline.addLast("frameDecoder", new LengthFieldBasedFrameDecoder(ByteOrder.LITTLE_ENDIAN, Integer.MAX_VALUE, 0, 4, 0, 4, true));
                         pipeline.addLast("frameEncoder", new LengthFieldPrepender(4));
                         //处理类
-                        pipeline.addLast(new ClientHandler());
+                        pipeline.addLast(clientHandler);
                     }
                 });
                 future = bootstrap.connect().sync();// 链接服务器.调用sync()方法会同步阻塞
