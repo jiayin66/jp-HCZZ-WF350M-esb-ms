@@ -2,6 +2,7 @@ package com.jp.hczz.dsj350m.netty.client;
 
 import com.jp.hczz.dsj350m.event.MessageSendService;
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.log4j.Logger;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.UnsupportedEncodingException;
 
+@ChannelHandler.Sharable
 @Component
 class ClientHandler extends ChannelHandlerAdapter {
 

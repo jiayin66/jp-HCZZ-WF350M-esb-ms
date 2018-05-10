@@ -2,10 +2,7 @@ package com.jp.hczz.dsj350m.netty.client;
 
 import com.jp.hczz.dsj350m.event.MessageSendService;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelPipeline;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
@@ -37,70 +34,54 @@ public class NettyClient {
 //        bootstrap.option(ChannelOption.RCVBUF_ALLOCATOR, new FixedRecvByteBufAllocator(65535));
         bootstrap.remoteAddress(new InetSocketAddress(host, port));// 指定请求地址
 
-//        final ConnectionWatchdog watchDog = new ConnectionWatchdog(bootstrap, new HashedWheelTimer(), host, port) {
-//
-//            @Override
-//            public ChannelHandler[] handlers() {
-//                return new ChannelHandler[]{
-//                        new StringDecoder(),
-//                        new StringEncoder(),
-//                        this,
-//                        // 每隔30s的时间触发一次userEventTriggered的方法，并且指定IdleState的状态位是WRITER_IDLE
-////                        new IdleStateHandler(0, 5, 0, TimeUnit.SECONDS),
-//                        // 实现userEventTriggered方法，并在state是WRITER_IDLE的时候发送一个心跳包到sever端，告诉server端我还活着
-////                        new ClientHeartBeatHandler(),
-//                        new ClientHandler()
-//
-//                };
-//            }
-//        };
-
-        final ChannelFuture future;
         try {
             synchronized (bootstrap) {
-//                bootstrap.handler(new ChannelInitializer<NioSocketChannel>() {
-//
-//                    @Override
-//                    protected void initChannel(NioSocketChannel ch) throws Exception {
-//                        ch.pipeline().addLast(watchDog.handlers());
-//                    }
-//                });
                 //设置管道工厂
                 bootstrap.handler(new ChannelInitializer<NioSocketChannel>() {
                     @Override
                     protected void initChannel(NioSocketChannel ch) throws Exception {
                         //获取管道
                         ChannelPipeline pipeline = ch.pipeline();
-//                        //字符串解码器
-//                        pipeline.addLast(new StringDecoder());
-//                        //字符串编码器
-//                        pipeline.addLast(new StringEncoder());
-                        //处理类
-//                        pipeline.addLast("frameDecoder", new ByteDecoder());
+                        pipeline.addFirst(new ChannelHandlerAdapter() {
+                            @Override
+                            public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+                                super.channelInactive(ctx);
+                                System.out.println("重连");
+                                ctx.channel().eventLoop().schedule(() -> doConnect(bootstrap), 1, TimeUnit.SECONDS);
+                            }
+                        });
                         pipeline.addLast("frameDecoder", new LengthFieldBasedFrameDecoder(ByteOrder.LITTLE_ENDIAN, Integer.MAX_VALUE, 0, 4, 0, 4, true));
                         pipeline.addLast("frameEncoder", new LengthFieldPrepender(4));
                         //处理类
                         pipeline.addLast(clientHandler);
                     }
                 });
-                future = bootstrap.connect().sync();// 链接服务器.调用sync()方法会同步阻塞
             }
-
-            if (!future.isSuccess()) {
-                logger.info("---- 连接服务器失败,2秒后重试 ---------port=" + port);
-                future.channel().eventLoop().schedule(new Runnable() {
-                    @Override
-                    public void run() {
-                        start(host, port);
-                    }
-
-                }, 2L, TimeUnit.SECONDS);
-            }
-
+            doConnect(bootstrap);
         } catch (Exception e) {
             logger.error("exception happends e {}", e);
         }
-
     }
 
+    private void doConnect(Bootstrap bootstrap) {
+        if (closed) {
+            return;
+        }
+        ChannelFuture future = bootstrap.connect();
+        future.addListener((ChannelFutureListener) f -> {
+            if (f.isSuccess()) {
+                System.out.println("连接 成功");
+            } else {
+                System.out.println("重连");
+                f.channel().eventLoop().schedule(() -> doConnect(bootstrap), 1, TimeUnit.SECONDS);
+            }
+        });
+    }
+
+    Boolean closed = false;
+
+    public void close() {
+        closed = true;
+//        workerGroup.shutdownGracefully();
+    }
 }
