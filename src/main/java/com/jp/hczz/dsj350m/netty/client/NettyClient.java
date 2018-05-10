@@ -1,0 +1,100 @@
+package com.jp.hczz.dsj350m.netty.client;
+
+import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+import io.netty.handler.codec.LengthFieldPrepender;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
+import java.net.InetSocketAddress;
+import java.util.concurrent.TimeUnit;
+
+@Component
+public class NettyClient {
+
+    private final static Logger logger = LoggerFactory.getLogger(NettyClient.class);
+
+    public void start(String host, int port) {
+        System.out.println("启动服务" + host + ":" + port);
+        // EventLoopGroup可以理解为是一个线程池，这个线程池用来处理连接、接受数据、发送数据
+        EventLoopGroup nioEventLoopGroup = new NioEventLoopGroup();
+        Bootstrap bootstrap = new Bootstrap(); // 客户端引导类
+        bootstrap.group(nioEventLoopGroup);// 多线程处理
+        bootstrap.channel(NioSocketChannel.class);// 指定通道类型为NioServerSocketChannel，一种异步模式，OIO阻塞模式为OioServerSocketChannel
+//        bootstrap.option(ChannelOption.RCVBUF_ALLOCATOR, new FixedRecvByteBufAllocator(65535));
+        bootstrap.remoteAddress(new InetSocketAddress(host, port));// 指定请求地址
+
+//        final ConnectionWatchdog watchDog = new ConnectionWatchdog(bootstrap, new HashedWheelTimer(), host, port) {
+//
+//            @Override
+//            public ChannelHandler[] handlers() {
+//                return new ChannelHandler[]{
+//                        new StringDecoder(),
+//                        new StringEncoder(),
+//                        this,
+//                        // 每隔30s的时间触发一次userEventTriggered的方法，并且指定IdleState的状态位是WRITER_IDLE
+////                        new IdleStateHandler(0, 5, 0, TimeUnit.SECONDS),
+//                        // 实现userEventTriggered方法，并在state是WRITER_IDLE的时候发送一个心跳包到sever端，告诉server端我还活着
+////                        new ClientHeartBeatHandler(),
+//                        new ClientHandler()
+//
+//                };
+//            }
+//        };
+
+        final ChannelFuture future;
+        try {
+            synchronized (bootstrap) {
+//                bootstrap.handler(new ChannelInitializer<NioSocketChannel>() {
+//
+//                    @Override
+//                    protected void initChannel(NioSocketChannel ch) throws Exception {
+//                        ch.pipeline().addLast(watchDog.handlers());
+//                    }
+//                });
+                //设置管道工厂
+                bootstrap.handler(new ChannelInitializer<NioSocketChannel>() {
+                    @Override
+                    protected void initChannel(NioSocketChannel ch) throws Exception {
+                        //获取管道
+                        ChannelPipeline pipeline = ch.pipeline();
+//                        //字符串解码器
+//                        pipeline.addLast(new StringDecoder());
+//                        //字符串编码器
+//                        pipeline.addLast(new StringEncoder());
+                        //处理类
+//                        pipeline.addLast("frameDecoder", new ByteDecoder());
+                        pipeline.addLast("frameDecoder", new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 4, 0, 4));
+                        pipeline.addLast("frameEncoder", new LengthFieldPrepender(4));
+                        //处理类
+                        pipeline.addLast(new ClientHandler());
+                    }
+                });
+                future = bootstrap.connect().sync();// 链接服务器.调用sync()方法会同步阻塞
+            }
+
+            if (!future.isSuccess()) {
+                logger.info("---- 连接服务器失败,2秒后重试 ---------port=" + port);
+                future.channel().eventLoop().schedule(new Runnable() {
+                    @Override
+                    public void run() {
+                        start(host, port);
+                    }
+
+                }, 2L, TimeUnit.SECONDS);
+            }
+
+        } catch (Exception e) {
+            logger.error("exception happends e {}", e);
+        }
+
+    }
+
+}

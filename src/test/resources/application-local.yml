@@ -43,7 +43,7 @@ spring:
       accept-case-insensitive-properties: true
 jp:
   swagger:
-    base-package: com.jp.hczz.350m.controller
+    base-package: com.jp.hczz.dsj350m.controller
     api-info:
       title: 金鹏微服务
       description: 金鹏微服务，基于spring boot
