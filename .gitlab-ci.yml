@@ -3,7 +3,7 @@ stages:
 - test_excute_sh
 variables:
   msName: $CI_PROJECT_NAME
-  msPort: 10055
+  msPort: 11020
   dev_hostType: dev
   dev_replicas: 1
   test_hostType: test
