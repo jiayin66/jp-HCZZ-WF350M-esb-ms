@@ -1,5 +1,5 @@
 server:
-  port: 10055
+  port: 11020
 spring:
   prifiles: local
   cloud:
@@ -8,7 +8,7 @@ spring:
       port: 80
       discovery:
         preferIpAddress: true
-        port: 10055
+        port: ${server.port}
         healthCheckPath: /health
         healthCheckInterval: 15s
         instanceId: ${spring.application.name}:${spring.cloud.consul.discovery.hostname}:${server.port}
@@ -40,7 +40,7 @@ spring:
                       brokers: test.peer4:9092
                       zkNodes: test.peer4:2181
   application:
-    name: jp-HCZZ-350M-esb-ms
+    name: jp-HCZZ-WF-350M-esb-ms
   rabbitmq:
     addresses: dev.rabbitmq1:5672,dev.rabbitmq2:5673
     username: all_hczz

@@ -53,7 +53,7 @@ class ClientHandler extends ChannelHandlerAdapter {
     //与服务器建立连接
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
-        System.out.println("channelActive");
+        log.warn("链接成功");
     }
 
     //与服务器断开连接
@@ -67,6 +67,7 @@ class ClientHandler extends ChannelHandlerAdapter {
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         //关闭管道
         ctx.channel().close();
+        log.error("netty发生异常~  请重新启动" + cause);
         //打印异常信息
         cause.printStackTrace();
     }

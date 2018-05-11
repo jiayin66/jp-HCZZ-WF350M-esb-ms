@@ -1,11 +1,9 @@
 spring:
     application:
-        name: jp-HCZZ-350M-esb-ms
+        name: jp-HCZZ-WF-350M-esb-ms
     cloud:
         config:
             uri: http://config.center:10016/
             label: master
             username: user
             password: password123
-    profiles:
-        active: local

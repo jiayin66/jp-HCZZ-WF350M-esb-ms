@@ -1,5 +1,5 @@
 server:
-  port: 10055
+  port: 11020
 spring:
   profiles: test
   cloud:
@@ -8,7 +8,7 @@ spring:
       port: ${test.consul.port}
       discovery:
         hostname: 172.17.99.113     #这里最好问一下张志龙
-        port: 10055
+        port: ${server.port}
         healthCheckPath: /health
         healthCheckInterval: 15s
         instanceId: ${test.instanceId}
@@ -40,7 +40,7 @@ spring:
                       brokers: test.peer4:9092
                       zkNodes: test.peer4:2181
   application:
-    name: jp-HCZZ-350M-esb-ms
+    name: jp-HCZZ-WF-350M-esb-ms
   rabbitmq:
     addresses: ${test.rabbitmq}
     username: all_hczz
@@ -67,7 +67,7 @@ jp:
     api-info:
       title: 金鹏微服务
       description: 金鹏微服务，基于spring boot
-      contact: 杨佳维
+      contact: 杨佳维/陈钦亚
       version: 0.0.1-SNAPSHOT
       url: www.example.com
       email: jinpeng@gzjp.cn
