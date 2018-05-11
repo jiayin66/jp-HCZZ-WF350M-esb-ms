@@ -10,12 +10,10 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
 import org.springframework.cloud.netflix.feign.EnableFeignClients;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication
 //@EnableDiscoveryClient
 @EnableFeignClients
-@EnableJpaRepositories("com.jp.hczz.dsj350m.dao")
 @EntityScan({"com.jp.hczz.dsj350m.entity", "com.jp.hczz.dsj350m.event.impl"})
 public class ApplicationStarter extends SpringBootServletInitializer implements CommandLineRunner {
 
