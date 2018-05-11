@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -25,7 +24,7 @@ public class MessageSendServiceImpl implements MessageSendService {
 
     @Override
     public void sendMessage(String msg) {
-        System.out.println("向kafka 发送数据 topic:" + msg);
+        log.info("向kafka 发送数据 topic:" + msg);
         Message<String> message = MessageBuilder.withPayload(msg).build();
         boolean flag = dsj350MPositionOutput.getDsj350MInfoChannel().send(message);
         if (flag) {
@@ -33,9 +32,9 @@ public class MessageSendServiceImpl implements MessageSendService {
         }
         TResLocationData tResLocationData = new TResLocationData(msg);
         String carPosition = SerializeUtil.toJson(tResLocationData);
-        log.info("carPosition:" + carPosition);
+//        log.info("carPosition:" + carPosition);
         message = MessageBuilder.withPayload(carPosition).build();
-//        flag = carPositionOutput.getCarInfoChannel().send(message);
+        flag = carPositionOutput.getCarInfoChannel().send(message);
         if (flag) {
             log.info("成功向kafka（ESB_CAR_POSITION）推送数据:" + carPosition);
         }

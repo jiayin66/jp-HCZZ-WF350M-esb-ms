@@ -59,7 +59,7 @@ class ClientHandler extends ChannelHandlerAdapter {
     //与服务器断开连接
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        System.out.println("channelInactive");
+        log.warn("接受链接断开");
     }
 
     //异常

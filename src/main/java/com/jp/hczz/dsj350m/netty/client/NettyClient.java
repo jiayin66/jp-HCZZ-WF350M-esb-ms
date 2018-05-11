@@ -1,14 +1,11 @@
 package com.jp.hczz.dsj350m.netty.client;
 
-import com.jp.hczz.dsj350m.event.MessageSendService;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -22,10 +19,10 @@ public class NettyClient {
     @Autowired
     private ClientHandler clientHandler;
 
-    private final static Logger logger = LoggerFactory.getLogger(NettyClient.class);
+    private org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(NettyClient.class);
 
     public void start(String host, int port) {
-        System.out.println("启动服务" + host + ":" + port);
+        log.info("启动tcp服务" + host + ":" + port);
         // EventLoopGroup可以理解为是一个线程池，这个线程池用来处理连接、接受数据、发送数据
         EventLoopGroup nioEventLoopGroup = new NioEventLoopGroup();
         Bootstrap bootstrap = new Bootstrap(); // 客户端引导类
@@ -46,8 +43,8 @@ public class NettyClient {
                             @Override
                             public void channelInactive(ChannelHandlerContext ctx) throws Exception {
                                 super.channelInactive(ctx);
-                                System.out.println("重连");
-                                ctx.channel().eventLoop().schedule(() -> doConnect(bootstrap), 1, TimeUnit.SECONDS);
+                                log.info("5秒后重连tcp服务" + host + ":" + port);
+                                ctx.channel().eventLoop().schedule(() -> doConnect(bootstrap), 5, TimeUnit.SECONDS);
                             }
                         });
                         pipeline.addLast("frameDecoder", new LengthFieldBasedFrameDecoder(ByteOrder.LITTLE_ENDIAN, Integer.MAX_VALUE, 0, 4, 0, 4, true));
@@ -59,7 +56,7 @@ public class NettyClient {
             }
             doConnect(bootstrap);
         } catch (Exception e) {
-            logger.error("exception happends e {}", e);
+            log.error("exception happends e {}", e);
         }
     }
 
@@ -70,10 +67,10 @@ public class NettyClient {
         ChannelFuture future = bootstrap.connect();
         future.addListener((ChannelFutureListener) f -> {
             if (f.isSuccess()) {
-                System.out.println("连接 成功");
+                log.info("重连tcp服务成功");
             } else {
-                System.out.println("重连");
-                f.channel().eventLoop().schedule(() -> doConnect(bootstrap), 1, TimeUnit.SECONDS);
+                log.info("重连tcp服务失败   5秒后再次重连");
+                f.channel().eventLoop().schedule(() -> doConnect(bootstrap), 5, TimeUnit.SECONDS);
             }
         });
     }

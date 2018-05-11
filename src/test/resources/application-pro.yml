@@ -1,5 +1,5 @@
 server:
-  port: 8090
+  port: 10055
 spring:
   profiles: pro
   cloud:
@@ -8,25 +8,39 @@ spring:
       port: 8500
       discovery:
         hostname: 59.39.4.23    #这里最好问一下张志龙
-        port: 8090
+        port: 10055
         healthCheckPath: /health
         healthCheckInterval: 15s
         instanceId: ${spring.application.name}:${spring.cloud.consul.discovery.hostname}:${server.port}
         query-passing: true
+    stream:
+      default-binder: sendKafka #设置默认的绑定通道
+      bindings: #绑定通道
+        ESB_WF_DSJ350M_POSITION:
+          content-type: text/plain
+          group: all_hczz #消费者分组消费
+          binder: sendKafka
+          producer: #消费者配置
+            header-mode: raw
+        ESB_CAR_POSITION:
+          content-type: text/plain
+          group: all_hczz #消费者分组消费
+          binder: sendKafka
+          producer: #消费者配置
+            header-mode: raw
+      binders:
+        sendKafka:
+          type: kafka
+          environment:
+            spring:
+              cloud:
+                stream:
+                  kafka:
+                    binder:
+                      brokers: test.peer4:9092
+                      zkNodes: test.peer4:2181
   application:
     name: jp-HCZZ-350M-esb-ms
-#如果微服务没有数据库配置，则该处用等号线括起来的部分可以删除
-  datasource:
-    driver-class-name: oracle.jdbc.driver.OracleDriver
-    url: jdbc:oracle:thin:@pro.oracle1:1521:ORCL
-    username: JPPRODUCER #数据库用户名密码信息请开发人员认真检查一下
-    password: admin123
-  jpa:
-    properties:
-      hibernate.hbm2ddl.auto: update
-      javax.persistence.validation.mode: none
-    show-sql: true
-#======================================================
   rabbitmq:
     addresses: pro.rabbitMq1:5672,pro.rabbitMq2:5673,pro.rabbitMq3:5674
     username: all_hczz
@@ -41,6 +55,9 @@ spring:
   jackson:
     mapper:
       accept-case-insensitive-properties: true
+netty:
+  ip: 127.0.0.1 #netty监控的ip和端口
+  port: 11111
 jp:
   swagger:
     base-package: com.jp.hczz.dsj350m.controller

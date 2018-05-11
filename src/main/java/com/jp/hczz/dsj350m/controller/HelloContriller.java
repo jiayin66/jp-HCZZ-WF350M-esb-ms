@@ -19,11 +19,11 @@ public class HelloContriller {
 
     @GetMapping()
     public String test() {
-        String msg = "1@130@273473@0@119.039204120636@36.6573214530945@26@0000@2018-05-08 18:21:09";
-
-        System.out.println("Client said:" + msg);
-        Message<String> message = MessageBuilder.withPayload(msg).build();
-        dsj350MPositionOutput.getDsj350MInfoChannel().send(message);
+//        String msg = "1@130@273473@0@119.039204120636@36.6573214530945@26@0000@2018-05-08 18:21:09";
+//
+//        System.out.println("Client said:" + msg);
+//        Message<String> message = MessageBuilder.withPayload(msg).build();
+//        dsj350MPositionOutput.getDsj350MInfoChannel().send(message);
         return "ok";
     }
 }
