@@ -28,12 +28,12 @@ class ClientHandler extends ChannelHandlerAdapter {
         try {
             String body = new String(req, "UTF-8");
             String[] msgs = body.split("@");
-            if (msgs.length < 7) {
-                log.warn("收到消息不符合协议格式忽略本条消息！！" + body);
+            if (!msgs[0].equals("1")) {
+                log.debug("收到消息不是GPS报文消息，0:提示信息；2:心跳！" + body);
                 return;
             }
-            if (!msgs[0].equals("1")) {
-                log.warn("收到消息不是GPS报文消息，忽略本条消息！！" + body);
+            if (msgs.length < 7) {
+                log.warn("收到消息不符合协议格式忽略本条消息！！" + body);
                 return;
             }
             log.info("收到消息：" + body);
