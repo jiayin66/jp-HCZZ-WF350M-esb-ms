@@ -37,7 +37,7 @@ public class TResLocationData {
 
     public TResLocationData(String msg) {
         String msgs[] = msg.split("@");
-        setId(UUID.randomUUID().toString());
+//        setId(UUID.randomUUID().toString());
         setGpsType("radio");
         setGpsId(msgs[2]);
         setLongitude(new BigDecimal(msgs[4]));
