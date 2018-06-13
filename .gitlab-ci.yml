@@ -1,53 +1,16 @@
 stages:
-- dev_excute_sh
-- test_excute_sh
-- master_excute_sh
+- build_sh
+
 variables:
   msName: $CI_PROJECT_NAME
   msPort: 11020
-  dev_hostType: dev
-  dev_replicas: 1
-  test_hostType: test
-  test_hostName: test.peer5
-
-dev_excute_sh:
-  stage: dev_excute_sh
-  script: 
-  - cd $CI_PROJECT_DIR
-  - mvn clean install
-  - sh /opt/kubeConfig/dev_build.sh $msName $msPort $CI_PROJECT_DIR $dev_hostType $dev_replicas
-  tags: 
-  -  shell
-  only:
-  - branch-dev
-  environment:
-    name: dev
-    url: http://$dev_hostName:$msPort/swagger-ui.html
   
-test_excute_sh:
-  stage: test_excute_sh
+build_sh:
+  stage: build_sh
   script:
-  - cd $CI_PROJECT_DIR
-  - mvn clean install
-  - sh /opt/dockerStackConfig/test_build.sh $msName $msPort $CI_PROJECT_DIR $test_hostType $test_hostName
+  - sh /opt/dockerStackConfig/build.sh $msName $msPort $CI_PROJECT_DIR  $CI_PROJECT_PATH $CI_PROJECT_NAMESPACE $CI_COMMIT_REF_NAME
   tags:
   - shell
   when: manual
   only:
   - master
-  environment:
-    name: test
-    url: http://$test_hostName:$msPort/swagger-ui.html
-    
-master_excute_sh:
-  stage: master_excute_sh
-  script:
-  - sh /opt/dockerStackConfig/master_build.sh $msName $msPort $CI_PROJECT_DIR master $test_hostName $CI_PROJECT_PATH
-  tags:
-  - shell
-  when: manual
-  only:
-  - master
-  environment:
-    name: master
-    url: http://$test_hostName:$msPort/swagger-ui.html
