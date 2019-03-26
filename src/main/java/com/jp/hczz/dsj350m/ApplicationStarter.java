@@ -2,6 +2,7 @@ package com.jp.hczz.dsj350m;
 
 import com.jp.hczz.dsj350m.netty.NettyConfig;
 import com.jp.hczz.dsj350m.netty.client.NettyClient;
+import com.jp.hczz.dsj350m.wsx350m.UDPClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -22,8 +23,8 @@ public class ApplicationStarter extends SpringBootServletInitializer implements 
     @Autowired
     private NettyClient client;
 
-    /*@Autowired
-    private UDPClient udpClient;*/
+    @Autowired
+    private UDPClient udpClient;
 
     @Autowired
     private NettyConfig nettyConfig;
@@ -48,9 +49,9 @@ public class ApplicationStarter extends SpringBootServletInitializer implements 
         if (isOpenWF350M){
             client.start(nettyConfig.getIp(), nettyConfig.getPort());
         }
-        /*if(isOpenWSX350M){
+        if(isOpenWSX350M){
             udpClient.UDPClient();
-        }*/
+        }
 
     }
 }

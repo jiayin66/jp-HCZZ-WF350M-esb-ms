@@ -1,4 +1,3 @@
-/*
 package com.jp.hczz.dsj350m.wsx350m;
 
 import org.slf4j.Logger;
@@ -16,29 +15,28 @@ public class UDPClient {
     private static final int MAXSUM = 5;//设置重发数据的次数
     private Logger logger = LoggerFactory.getLogger(UDPClient.class);
     public void UDPClient() throws IOException {
-        */
-/*
+        /*
          * 向服务器端发送数据
-         *//*
+         */
 
-        //1.定义服务器的地址、端口号、数据
-        InetAddress address = InetAddress.getByName("http://59.48.5.102");
-        int port = 40000;
-        byte[] data = "0xAA0xBBgis123456".getBytes();
-        logger.info("启动tcp服务" + address + ":" + port);
         try {
+            //1.定义服务器的地址、端口号、数据
+            InetAddress address = InetAddress.getByName("59.48.5.102");
+            int port = 40000;
+            byte[] data = "0xAA0xBBgis123456".getBytes();
+            logger.info("启动udp服务" + address + ":" + port);
+            //2.创建DatagramSocket对象
+            DatagramSocket socket = new DatagramSocket(40000,address);
             //定义用来发送数据的DatagramPacket实例
             //官方：创建一个数据包实例，将指定长度的数据发送给指定端口的指定主键上。
-            //2.创建数据报，包含发送的数据信息
+            //3.创建数据报，包含发送的数据信息
             DatagramPacket packet = new DatagramPacket(data, data.length, address, port);
-            //3.创建DatagramSocket对象
-            DatagramSocket socket = new DatagramSocket();
 
             //定义用来接收数据的DatagramPacket实例
             //没有设置端口号，所以是接收数据，要是设置了端口号和主机就是发送数据
             DatagramPacket dp_receive = new DatagramPacket(data, data.length);
 
-            //数据发向本地3000端口
+            //数据发向端口
             socket.setSoTimeout(TIMEOUT);
             int tries = 0;
             boolean receivedResponse = false;
@@ -67,11 +65,9 @@ public class UDPClient {
             if(receivedResponse){
                 //如果收到数据，则打印出来
                 System.out.println("client received data from server：");
-                */
-/*
+                /*
                  * 接收服务器端响应的数据
-                 *//*
-
+                 */
 
                 String str_receive = new String(dp_receive.getData(),0,dp_receive.getLength()) +
                         " from " + dp_receive.getAddress().getHostAddress() + ":" +
@@ -90,4 +86,3 @@ public class UDPClient {
         }
     }
 }
-*/
