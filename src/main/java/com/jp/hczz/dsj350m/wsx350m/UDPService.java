@@ -1,18 +1,17 @@
-/*
 package com.jp.hczz.dsj350m.wsx350m;
 
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
+import org.springframework.stereotype.Component;
 
+import java.io.IOException;
+import java.net.*;
+@Component
 public class UDPService {
-    public static void main(String[] args) throws IOException {
+    //public static void main(String[] args) throws IOException {
 
 
          //接收客户端发送的数据
 
-
+    public void UDPService() throws IOException {
         //1.创建服务器端DatagramSocket，指定端口
         DatagramSocket socket=new DatagramSocket(8080);
         //2.创建数据报，用于接收客户端发送的数据
@@ -23,16 +22,15 @@ public class UDPService {
 
         //1.定义客户端的地址、端口号、数据
         InetAddress address=InetAddress.getByName("172.16.3.30");
-        int port=10020;
-        while (true){
+        //InetAddress address= InetAddress.getLocalHost();
+        int port=11020;
+        for (int i=0;i<100;i++){
             byte[] data2="欢迎您!".getBytes();
             //2.创建数据报，包含响应的数据信息
             DatagramPacket packet2=new DatagramPacket(data2, data2.length, address, port);
             //3.响应客户端
             socket.send(packet2);
-
         }
     }
 }
 
-*/

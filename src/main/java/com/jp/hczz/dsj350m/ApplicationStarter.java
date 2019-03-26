@@ -3,6 +3,7 @@ package com.jp.hczz.dsj350m;
 import com.jp.hczz.dsj350m.netty.NettyConfig;
 import com.jp.hczz.dsj350m.netty.client.NettyClient;
 import com.jp.hczz.dsj350m.wsx350m.UDPClient;
+import com.jp.hczz.dsj350m.wsx350m.UDPService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -29,6 +30,9 @@ public class ApplicationStarter extends SpringBootServletInitializer implements 
     @Autowired
     private NettyConfig nettyConfig;
 
+    @Autowired
+    private UDPService udpService;
+
     @Value("${isOpenWF350M}")
     private boolean isOpenWF350M;//是否开启潍坊350M手台链接，false：不开启，true：开启
 
@@ -51,6 +55,7 @@ public class ApplicationStarter extends SpringBootServletInitializer implements 
         }
         if(isOpenWSX350M){
             udpClient.UDPClient();
+            udpService.UDPService();
         }
 
     }
