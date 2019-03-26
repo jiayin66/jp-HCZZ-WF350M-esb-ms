@@ -3,7 +3,7 @@ spring:
     name: jp-HCZZ-WF350M-esb-ms
   cloud:
     config:
-      uri: http://config.center:10016/
+      uri: http://wh.config.center:10016/
       #uri: http://10.73.200.155:20016/
       label: master
       username: user
