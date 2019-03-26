@@ -18,7 +18,7 @@ public class UDPClient {
         DatagramSocket datagramSocket=null;
         try {
             //监视8081端口的内容
-            datagramSocket=new DatagramSocket(40000);
+            datagramSocket=new DatagramSocket(11020);
             byte[] buf=new byte[1024];
             while (true){
                 //定义接收数据的数据包
@@ -28,6 +28,7 @@ public class UDPClient {
                 //从接收数据包取出数据
                 String data=new String(datagramPacket.getData() , 0 ,datagramPacket.getLength());
                 System.out.println(data);
+                logger.info("接收到消息："+data);
             }
         } catch (SocketException e) {
             e.printStackTrace();
