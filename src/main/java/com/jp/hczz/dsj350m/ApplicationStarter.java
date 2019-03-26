@@ -50,7 +50,7 @@ public class ApplicationStarter extends SpringBootServletInitializer implements 
             client.start(nettyConfig.getIp(), nettyConfig.getPort());
         }
         if(isOpenWSX350M){
-            //udpClient.UDPClient();
+            udpClient.UDPClient();
         }
 
     }
