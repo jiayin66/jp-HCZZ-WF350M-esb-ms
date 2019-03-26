@@ -28,8 +28,8 @@ public class UDPClient {
 
                 //从接收数据包取出数据
                 String data=new String(datagramPacket.getData() , 0 ,datagramPacket.getLength());
-                System.out.println(data);
-                logger.info("接收到消息："+data);
+                String str = new String(data.getBytes("ISO-8859-1"),"UTF-8");
+                logger.info("接收到消息："+str);
             }
         } catch (SocketException e) {
             e.printStackTrace();
