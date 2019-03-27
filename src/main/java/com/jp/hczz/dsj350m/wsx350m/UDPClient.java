@@ -6,6 +6,7 @@ import com.jp.hczz.dsj350m.wsx350m.model.LocationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
@@ -17,7 +18,9 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 @Service
 @EnableBinding(LocationOutput.class)
@@ -26,13 +29,19 @@ public class UDPClient {
     @Autowired
     private LocationOutput locationOutput;
 
+    @Value("${portNumber}")
+    private int portNumber;//端口号
+
+    @Value("${byteArray}")
+    private int byteArray;//读取字节数
+
     public void UDPClient() {
         DatagramSocket datagramSocket = null;
         try {
             //监视40000端口的内容
-            datagramSocket = new DatagramSocket(40000);
+            datagramSocket = new DatagramSocket(portNumber);
             logger.info("客户端已启动");
-            byte[] buf = new byte[56];
+            byte[] buf = new byte[byteArray];
             while (true) {
                 //定义接收数据的数据包
                 DatagramPacket datagramPacket = new DatagramPacket(buf, 0, buf.length);
@@ -58,8 +67,10 @@ public class UDPClient {
                 SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSXXX");
                 String date = simpleDateFormat.format(time);
                 String manufacturer = "WSX";
+                List<LocationInfo> locationInfos = new ArrayList<>();
                 LocationInfo locationInfo = new LocationInfo(gpsId,longitude,latitude, date,gpsType, speed,direction, manufacturer);
-                String message = SerializeUtil.toJson(locationInfo);
+                locationInfos.add(locationInfo);
+                String message = SerializeUtil.toJson(locationInfos);
                 sendMessageInfo(message);
             }
         } catch (SocketException e) {
