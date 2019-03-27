@@ -68,12 +68,12 @@ public class UDPClient {
         if (!getChars(speed).equals("") || getChars(speed) != null){
             getSpeed = Integer.parseInt(getChars(speed));
         }*/
-        String getSpeed = String.valueOf(speed);
+        int getSpeed = speed[0];
         logger.info("接收到速度消息：" + getSpeed);
         //方向
         int[] dir = new int[1];
         System.arraycopy(ints, 27, dir, 0, 1);
-        String getDir = String.valueOf(dir);
+        int getDir = dir[0];
         logger.info("接收到方向消息：" + getDir);
         return "，设备号为："+getGpsId + "，速度为：" + getSpeed + "，方向为："+ getDir;
     }
@@ -129,13 +129,12 @@ public class UDPClient {
     private String gpsid(int[] gpsId) {
         StringBuffer stringBuffer = new StringBuffer();
         for(int i=0;i<gpsId.length;i++){
-            int[] gpsIds = new int[1];
-            System.arraycopy(gpsId, i, gpsIds, 0, 1);
-
-            String getId = String.valueOf(gpsIds);
-            logger.info("设备号第"+i+"个字节转换为："+getId);
-            String num = String.valueOf(Long.parseLong(getId, 16));
-            logger.info("设备号第"+i+"个字节转换为10进制："+num);
+            String num = null;
+            if(gpsId[i] !=0 && gpsId[i]>=10){
+                num = ""+ gpsId[i];
+            }else if (gpsId[i] !=0 && gpsId[i]<10){
+                num = "0"+gpsId[i];
+            }
             stringBuffer.append(num);
         }
         return String.valueOf(stringBuffer);
