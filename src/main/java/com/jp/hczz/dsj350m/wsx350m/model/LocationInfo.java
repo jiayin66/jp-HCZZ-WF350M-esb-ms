@@ -31,6 +31,17 @@ public class LocationInfo {
     @ApiModelProperty(value = "厂商编码")
     private String manufacturer;
 
+    public LocationInfo(String id, BigDecimal longitude, BigDecimal latitude, String time, String gpsType, Double speed, Integer direction, String manufacturer) {
+        this.id = id;
+        this.longitude = longitude;
+        this.latitude = latitude;
+        this.time = time;
+        this.gpsType = gpsType;
+        this.speed = speed;
+        this.direction = direction;
+        this.manufacturer = manufacturer;
+    }
+
     public String getId() {
         return id;
     }

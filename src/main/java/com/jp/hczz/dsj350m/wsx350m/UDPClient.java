@@ -1,21 +1,35 @@
 package com.jp.hczz.dsj350m.wsx350m;
 
+import com.jp.common.utils.serialize.SerializeUtil;
+import com.jp.hczz.dsj350m.wsx350m.io.LocationOutput;
+import com.jp.hczz.dsj350m.wsx350m.model.LocationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.stream.annotation.EnableBinding;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 
-@Component
+@Service
+@EnableBinding(LocationOutput.class)
 public class UDPClient {
     private Logger logger = LoggerFactory.getLogger(UDPClient.class);
+    @Autowired
+    private LocationOutput locationOutput;
 
     //public static void main(String[] args) throws IOException {
     public void UDPClient() {
@@ -30,20 +44,30 @@ public class UDPClient {
                 DatagramPacket datagramPacket = new DatagramPacket(buf, 0, buf.length);
                 datagramSocket.receive(datagramPacket);
                 byte[] bytes = datagramPacket.getData();
-
-                logger.info("接收信息为遍历数组为："+Arrays.toString(bytes));
+                //logger.info("接收信息为遍历数组为："+Arrays.toString(bytes));
                 int[] ints = new int[bytes.length];
                 for (int i =0;i<bytes.length-1;i++){
                     ints[i] = bytes[i]&0xff;  //按位与，将sign类型转化为int的数字。因为Java中没有
                 }
-                logger.info("接收信息转换为int数组为："+Arrays.toString(ints));
+                //logger.info("接收信息转换为int数组为："+Arrays.toString(ints));
 
-                String getData1 = transcoding(bytes);
-                String getData2 = transcodingInt(ints);
+                String gpsId = gpsIdInfo(ints);
+                BigDecimal longitude = BigDecimal.valueOf(longitudeInfo(bytes));
+                BigDecimal latitude = BigDecimal.valueOf(latitudeInfo(bytes));
+                Double speed = Double.valueOf(speedInfo(ints));
+                int direction = dirInfo(ints);
+                long time = timeInfo(bytes);
                 //从接收数据包取出数据
-                String getData = getData1+getData2;
                 //String data=new String(datagramPacket.getData() , 0 ,datagramPacket.getLength());
-                logger.info("接收到消息：" + getData);
+                logger.info("接收到消息信息转换为int数组为："+Arrays.toString(ints));
+                String gpsType = "radio";
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSXXX");
+                String date = simpleDateFormat.format(time);
+                String manufacturer = "WSX";
+                LocationInfo locationInfo = new LocationInfo(gpsId,longitude,latitude, date,gpsType, speed,direction, manufacturer);
+                logger.info("转换为标准模型："+locationInfo);
+                String message = SerializeUtil.toJson(locationInfo);
+                sendMessageInfo(message);
             }
         } catch (SocketException e) {
             logger.error("监听端口异常");
@@ -56,86 +80,77 @@ public class UDPClient {
         }
     }
 
-    private String transcodingInt(int[] ints) {
+    private void sendMessageInfo(String message) {
+        logger.debug("推送手台点位数据：topcs:{},message:{}", LocationOutput.EXCHANGE_NAME,message);
+        Message<String> msg= MessageBuilder.withPayload(message).build();
+        boolean  result= locationOutput.outputChannel().send(msg);
+        logger.debug("推送手台点位数据是否成功:{}",result);
+    }
+
+    public String gpsIdInfo(int[] ints) {
         int[] gpsId = new int[6];
         System.arraycopy(ints, 4, gpsId, 0, 6);
         String getGpsId = gpsid(gpsId);
         logger.info("接收到设备号消息：" + getGpsId);
+
+        return getGpsId;
+    }
+    public int speedInfo(int[] ints){
         //速度
         int[] speed = new int[1];
         System.arraycopy(ints, 26, speed, 0, 1);
-        /*int getSpeed = 0;
-        if (!getChars(speed).equals("") || getChars(speed) != null){
-            getSpeed = Integer.parseInt(getChars(speed));
-        }*/
         int getSpeed = speed[0];
         logger.info("接收到速度消息：" + getSpeed);
+        return getSpeed;
+    }
+
+    public int dirInfo(int[] ints){
         //方向
         int[] dir = new int[1];
         System.arraycopy(ints, 27, dir, 0, 1);
         int getDir = dir[0];
         logger.info("接收到方向消息：" + getDir);
-        return "，设备号为："+getGpsId + "，速度为：" + getSpeed + "，方向为："+ getDir;
+        return  getDir;
     }
 
 
-    public String transcoding(byte[] data) {
-        //设备号
-        /*byte[] gpsId = new byte[6];
-        System.arraycopy(data, 4, gpsId, 0, 6);
-
-
-        byte[] gpsId1 = new byte[1];
-        System.arraycopy(data, 4, gpsId1, 0, 1);
-        String getGpsId1 = new String(gpsId1);
-        byte[] gpsId2 = new byte[1];
-        System.arraycopy(data, 5, gpsId2, 0, 1);
-        String getGpsId2 = new String(gpsId2);
-        byte[] gpsId3 = new byte[1];
-        System.arraycopy(data, 6, gpsId3, 0, 1);
-        String getGpsId3 = new String(gpsId3);
-        byte[] gpsId4 = new byte[1];
-        System.arraycopy(data, 7, gpsId4, 0, 1);
-        String getGpsId4 = new String(gpsId4);
-        byte[] gpsId5 = new byte[1];
-        System.arraycopy(data, 8, gpsId5, 0, 1);
-        String getGpsId5 = new String(gpsId5);
-        byte[] gpsId6 = new byte[1];
-        System.arraycopy(data, 9, gpsId6, 0, 1);
-        String getGpsId6 = new String(gpsId6);
-        String getGpsId = getGpsId1 + getGpsId2 + getGpsId3 + getGpsId4 + getGpsId5 + getGpsId6;
-        logger.info("接收到设备号消息：" + getGpsId);*/
+    public Double longitudeInfo(byte[] data) {
         //经度
         byte[] lon = new byte[8];
         System.arraycopy(data, 10, lon, 0, 8);
         double getLongitude = bytes2Double(lon);
-        logger.info("接收到经度消息：" + getLongitude);
+        return getLongitude;
+    }
+
+    public Double latitudeInfo(byte[] data){
         //纬度
         byte[] lat = new byte[8];
         System.arraycopy(data, 18, lat, 0, 8);
         double getLatitude = bytes2Double(lat);
-        logger.info("接收到纬度消息：" + getLatitude);
+        return getLatitude;
+    }
 
+    public long timeInfo(byte[] data){
         //时间
         byte[] time = new byte[8];
         System.arraycopy(data, 36, time, 0, 8);
         double dTime = bytes2Double(time);
-        long ltime = (long) ((double) (dTime - 25570) * 1000 * 3600 * 24 + 57600000);
-        logger.info("接收到时间消息：" + ltime);
-
-        return "经度为：" + getLongitude + "，纬度为：" + getLatitude +  "，时间为：" + dTime + "," + ltime;
+        long ltime = (long) ((dTime - 25570) * 1000 * 3600 * 24 + 57600000);
+        return ltime;
     }
 
     private String gpsid(int[] gpsId) {
         StringBuffer stringBuffer = new StringBuffer();
         for(int i=0;i<gpsId.length;i++){
-            String num = null;
-            if(gpsId[i] !=0 && gpsId[i]>=10){
-                num = ""+ gpsId[i];
-            }else if (gpsId[i] !=0 && gpsId[i]<10){
-                num = "0"+gpsId[i];
+            if (gpsId[i] !=0 ) {
+                String num = null;
+                if (gpsId[i] >= 10) {
+                    num = "" + gpsId[i];
+                } else if (gpsId[i] < 10) {
+                    num = "0" + gpsId[i];
+                }
+                stringBuffer.append(num);
             }
-            stringBuffer.append(num);
         }
         return String.valueOf(stringBuffer);
     }
