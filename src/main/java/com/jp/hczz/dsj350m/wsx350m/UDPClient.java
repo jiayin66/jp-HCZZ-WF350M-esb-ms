@@ -26,6 +26,7 @@ public class UDPClient {
                 DatagramPacket datagramPacket=new DatagramPacket(buf, 0, buf.length);
                 datagramSocket.receive(datagramPacket);
                 String getData = null;
+                logger.info("接收到的信息长度为："+datagramPacket.getData().length);
                 if (datagramPacket.getData().length%56 ==0){
                     for (int i=0;i<datagramPacket.getData().length/56;i++){
                         byte[] data = new byte[56];
@@ -33,7 +34,7 @@ public class UDPClient {
                         getData = transcoding(data);
                     }
                 }else{
-                    logger.debug("");
+                    logger.debug("接收到的信息长度不为56的倍数");
                 }
 
 
