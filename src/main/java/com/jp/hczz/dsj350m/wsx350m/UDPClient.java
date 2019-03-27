@@ -20,7 +20,7 @@ public class UDPClient {
             //监视40000端口的内容
             datagramSocket=new DatagramSocket(40000);
             logger.info("客户端已启动");
-            byte[] buf=new byte[1024];
+            byte[] buf=new byte[56];
             while (true){
                 //定义接收数据的数据包
                 DatagramPacket datagramPacket=new DatagramPacket(buf, 0, buf.length);
