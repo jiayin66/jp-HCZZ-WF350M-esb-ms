@@ -84,10 +84,12 @@ public class UDPClient {
     }
 
     public int bytes2Int(byte[] bytes) {
-        int num = bytes[3] & 0xFF;
-        num |= ((bytes[2] << 8) & 0xFF00);
-        num |= ((bytes[1] << 16) & 0xFF0000);
-        num |= ((bytes[0] << 24) & 0xFF0000);
-        return num;
+        int value = 0;
+        // 由高位到低位
+        for (int i = 0; i < 4; i++) {
+            int shift = (4 - 1 - i) * 8;
+            value += (bytes[i] & 0x000000FF) << shift;// 往高位游
+        }
+        return value;
     }
 }
