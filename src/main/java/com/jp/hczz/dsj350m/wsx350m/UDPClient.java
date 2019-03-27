@@ -8,6 +8,9 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.Charset;
 
 @Component
 public class UDPClient {
@@ -46,7 +49,7 @@ public class UDPClient {
         //设备号
         byte[] gpsId = new byte[6];
         System.arraycopy(data, 4, gpsId, 0, 6);
-        String getGpsId = new String(gpsId);
+        String getGpsId = getChars(gpsId);
         logger.info("接收到设备号消息：" + getGpsId);
         //经度
         byte[] lon = new byte[8];
@@ -61,12 +64,12 @@ public class UDPClient {
         //速度
         byte[] speed = new byte[1];
         System.arraycopy(data, 26, speed, 0, 1);
-        int getSpeed = Integer.parseInt(String.valueOf(speed));
+        int getSpeed = Integer.parseInt(getChars(speed));
         logger.info("接收到速度消息：" + getSpeed);
         //方向
         byte[] dir = new byte[1];
         System.arraycopy(data, 27, dir, 0, 1);
-        int getDir = Integer.parseInt(String.valueOf(dir));
+        int getDir = Integer.parseInt(getChars(dir));
         logger.info("接收到方向消息：" + getDir);
         //时间
         byte[] time = new byte[8];
@@ -84,5 +87,15 @@ public class UDPClient {
             value |= ((long) (arr[i] & 0xff)) << (8 * i);
         }
         return Double.longBitsToDouble(value);
+    }
+
+
+    public String getChars(byte[] bytes) {
+        Charset cs = Charset.forName("UTF-8");
+        ByteBuffer bb = ByteBuffer.allocate(bytes.length);
+        bb.put(bytes);
+        bb.flip();
+        CharBuffer cb = cs.decode(bb);
+        return String.valueOf(cb.array());
     }
 }
