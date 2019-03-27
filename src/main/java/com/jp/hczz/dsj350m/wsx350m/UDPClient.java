@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -17,12 +16,8 @@ import java.math.BigDecimal;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Date;
 
 @Service
 @EnableBinding(LocationOutput.class)
@@ -31,7 +26,6 @@ public class UDPClient {
     @Autowired
     private LocationOutput locationOutput;
 
-    //public static void main(String[] args) throws IOException {
     public void UDPClient() {
         DatagramSocket datagramSocket = null;
         try {
@@ -65,7 +59,6 @@ public class UDPClient {
                 String date = simpleDateFormat.format(time);
                 String manufacturer = "WSX";
                 LocationInfo locationInfo = new LocationInfo(gpsId,longitude,latitude, date,gpsType, speed,direction, manufacturer);
-                logger.info("转换为标准模型："+locationInfo);
                 String message = SerializeUtil.toJson(locationInfo);
                 sendMessageInfo(message);
             }
@@ -91,7 +84,6 @@ public class UDPClient {
         int[] gpsId = new int[6];
         System.arraycopy(ints, 4, gpsId, 0, 6);
         String getGpsId = gpsid(gpsId);
-        logger.info("接收到设备号消息：" + getGpsId);
 
         return getGpsId;
     }
@@ -100,7 +92,6 @@ public class UDPClient {
         int[] speed = new int[1];
         System.arraycopy(ints, 26, speed, 0, 1);
         int getSpeed = speed[0];
-        logger.info("接收到速度消息：" + getSpeed);
         return getSpeed;
     }
 
@@ -109,7 +100,6 @@ public class UDPClient {
         int[] dir = new int[1];
         System.arraycopy(ints, 27, dir, 0, 1);
         int getDir = dir[0];
-        logger.info("接收到方向消息：" + getDir);
         return  getDir;
     }
 

@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class LocationInfo {
     @ApiModelProperty(value = "设备id")
-    private String id;
+    private String gpsId;
 
     @ApiModelProperty(value = "经度")
     private BigDecimal longitude;
@@ -31,8 +31,8 @@ public class LocationInfo {
     @ApiModelProperty(value = "厂商编码")
     private String manufacturer;
 
-    public LocationInfo(String id, BigDecimal longitude, BigDecimal latitude, String time, String gpsType, Double speed, Integer direction, String manufacturer) {
-        this.id = id;
+    public LocationInfo(String gpsId, BigDecimal longitude, BigDecimal latitude, String time, String gpsType, Double speed, Integer direction, String manufacturer) {
+        this.gpsId = gpsId;
         this.longitude = longitude;
         this.latitude = latitude;
         this.time = time;
@@ -42,12 +42,12 @@ public class LocationInfo {
         this.manufacturer = manufacturer;
     }
 
-    public String getId() {
-        return id;
+    public String getGpsId() {
+        return gpsId;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setGpsId(String gpsId) {
+        this.gpsId = gpsId;
     }
 
     public BigDecimal getLongitude() {
