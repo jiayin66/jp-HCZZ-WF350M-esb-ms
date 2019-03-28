@@ -12,5 +12,3 @@ build_sh:
   tags:
   - shell
   when: manual
-  only:
-  - master
