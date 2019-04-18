@@ -35,7 +35,7 @@ public class WDRadioHandler extends SimpleChannelInboundHandler<RadioMsg> {
 	protected void channelRead0(ChannelHandlerContext ctx, RadioMsg msg) throws Exception {
 		log.debug("从上游厂家接收数据为："+JSON.toJSONString(msg));
 		//推送kafaka 实时点位主题
-		sendKafkaService.sendKafka(msg);
+		//sendKafkaService.sendKafka(msg);
 		//推送kafaka 数据保存主题
 		
 	 }

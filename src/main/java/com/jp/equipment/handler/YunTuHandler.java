@@ -1,15 +1,18 @@
 package com.jp.equipment.handler;
 
 import java.nio.ByteOrder;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.core.MessageReceivingOperations;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import com.alibaba.fastjson.JSON;
+import com.jp.equipment.model.LocationData;
 import com.jp.equipment.model.RadioMsg;
 import com.jp.equipment.server.ConstantValue;
 import com.jp.equipment.service.SendKafkaService;
@@ -29,8 +32,41 @@ private static final Logger log = LoggerFactory.getLogger(RadioMsgDecoder.class)
 	private SendKafkaService sendKafkaService;
 	
 	public final int BASE_LENGTH = 10;
+	
+	private static volatile List<LocationData> sendList=new ArrayList<LocationData>();
+	
+	private static volatile long lastTimeMillis= System.currentTimeMillis();
+	private static volatile short YEAR=2019;
+	
+	@Value("${manufacturer}")
+	private static String manufacturer;
 
-    @Override
+	
+	public static List<LocationData> getSendList() {
+		return sendList;
+	}
+
+	public static void setSendList(List<LocationData> sendList) {
+		YunTuHandler.sendList = sendList;
+	}
+
+	public static long getLastTimeMillis() {
+		return lastTimeMillis;
+	}
+
+	public static void setLastTimeMillis(long lastTimeMillis) {
+		YunTuHandler.lastTimeMillis = lastTimeMillis;
+	}
+
+	public static String getManufacturer() {
+		return manufacturer;
+	}
+
+	public static void setManufacturer(String manufacturer) {
+		YunTuHandler.manufacturer = manufacturer;
+	}
+
+	@Override
     public void exceptionCaught(ChannelHandlerContext ctx,Throwable cause)
         throws Exception{
         ctx.close();
@@ -81,6 +117,7 @@ private static final Logger log = LoggerFactory.getLogger(RadioMsgDecoder.class)
 			
 			// 判断请求数据包数据是否到齐
 			//其中，包体长度只包括“数据体长度”，不包括“包头”和“包尾部分”。
+			 
 			if (buffer.readableBytes() < 51 ) {
 				// 还原读指针
 				buffer.readerIndex(beginReader);
@@ -114,7 +151,16 @@ private static final Logger log = LoggerFactory.getLogger(RadioMsgDecoder.class)
 			  short dir = buffer.readBytes(2).order(ByteOrder.LITTLE_ENDIAN).readShort();
 			  
 			//年月日
-			  String timeStr = buffer.readBytes(2).order(ByteOrder.LITTLE_ENDIAN).readShort()+"";
+			  short nian=buffer.readBytes(2).order(ByteOrder.LITTLE_ENDIAN).readShort();
+			  short year=0;
+			  if(nian<2018||nian>2118) {
+				  log.debug("上游厂家时间格式{}，修补为{}",nian,YEAR);
+				  nian=YEAR;
+				  year=YEAR;
+			  }else {
+				  year=nian;
+			  }
+			  String timeStr =nian+"";
 			  
 			  for(int i=0;i<5;i++) {
 				  String subTime = buffer.readByte()+"";
@@ -136,14 +182,25 @@ private static final Logger log = LoggerFactory.getLogger(RadioMsgDecoder.class)
 			}
 			RadioMsg radioMsg =new RadioMsg(gpsid, lon, lat, speed, alt, acc,dir, timeStr,beiYong);
 			log.debug("从上游厂家接收数据为："+JSON.toJSONString(radioMsg));
-			sendKafkaService.sendKafka(radioMsg);
-		}
-		
-		
+			LocationData locationData=new LocationData(radioMsg,manufacturer);	
+			//多线程同步
+			synchronized(this){
+				long currentTimeMillis = System.currentTimeMillis();
+				long cha=currentTimeMillis-lastTimeMillis;
+				if(sendList.size()>=99||cha>2000) {
+					sendList.add(locationData);
+					sendKafkaService.sendKafka(sendList);
+					int size = sendList.size();
+					log.debug("集合size"+size+"使用了"+cha+"本次速度"+(double)1000*size/cha+"秒");
+					lastTimeMillis=currentTimeMillis;
+					sendList=new ArrayList<LocationData>();	
+					if(YEAR!=year) {
+						YEAR=year;
+					}
+				}else {
+					sendList.add(locationData);
+				}				
+			}		
+		}	
 	}
-
-
-	
-	
-
 }

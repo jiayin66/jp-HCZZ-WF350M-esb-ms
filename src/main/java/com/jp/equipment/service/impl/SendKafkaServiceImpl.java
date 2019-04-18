@@ -34,19 +34,13 @@ public class SendKafkaServiceImpl implements SendKafkaService{
 	private static final Logger log = LoggerFactory.getLogger(SendKafkaServiceImpl.class);
 	@Autowired
 	private LocationIO locationIO;
-	@Value("${manufacturer}")
-	private String manufacturer;
+	
 	@Override
-	public LocationData sendKafka(RadioMsg radioMsg) {
-		LocationData locationData=new LocationData(radioMsg,manufacturer);
-		//此事件需要数组
-		List<LocationData> listLocation=new ArrayList<LocationData>();
-		listLocation.add(locationData);
+	public void sendKafka(List<LocationData> listLocation) {
 		String locationJson = JSON.toJSONString(listLocation);
 		log.debug("推送点位数据为："+locationJson);
 		Message<String> message =MessageBuilder.withPayload(locationJson).build();
-		locationIO.getOutputChannel().send(message);
-		return locationData;
+		locationIO.getOutputChannel().send(message);	
 	}
 
 }
